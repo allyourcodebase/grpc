@@ -47,6 +47,7 @@ pub fn build(b: *Build) !void {
     grpc.addIncludePath(re2.path(""));
     grpc.addIncludePath(boringssl.path("src/include"));
     grpc.addIncludePath(cares.path("include"));
+    libgrpc.installHeadersDirectory(upstream.path("include/grpc"), "grpc", .{});
     b.installArtifact(libgrpc);
 
     // Googletest library
@@ -63,6 +64,7 @@ pub fn build(b: *Build) !void {
     });
     gtestmod.addIncludePath(gtest.path("googletest/include"));
     gtestmod.addIncludePath(gtest.path("googletest"));
+    libgtest.installHeadersDirectory(gtest.path("googletest/include"), "", .{});
 
     { // Build tests to ensure no symbols are missing
         const example_step = b.step("examples", "Build example programs");
@@ -81,8 +83,6 @@ pub fn build(b: *Build) !void {
                 .flags = &cxx_flags,
             });
             client_idle.addIncludePath(upstream.path(""));
-            client_idle.addIncludePath(upstream.path("include"));
-            client_idle.addIncludePath(gtest.path("googletest/include"));
             client_idle.linkLibrary(libgtest);
             client_idle.linkLibrary(libgrpc);
             try tests.append(b.allocator, b.addExecutable(.{ .name = "idle_filter_state", .root_module = client_idle }));
