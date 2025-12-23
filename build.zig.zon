@@ -1,0 +1,18 @@
+.{
+    .name = .grpc,
+    .version = "1.76.0",
+    .fingerprint = 0x2b44e58c15cd55d6,
+    .minimum_zig_version = "0.14.1",
+
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+    },
+
+    .dependencies = .{
+        .upstream = .{
+            .url = "git+https://github.com/grpc/grpc?ref=v1.76.0#f5ffb68d8a2fd603dff16287e90a4ac571e1fec6",
+            .hash = "N-V-__8AAD6keQTMOK8EQEmJQx54oll-zJuoNBdRu7xfYgRZ",
+        },
+    },
+}
