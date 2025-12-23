@@ -30,5 +30,9 @@
             .url = "git+https://github.com/c-ares/c-ares?ref=v1.34.5#d3a507e920e7af18a5efb7f9f1d8044ed4750013",
             .hash = "N-V-__8AAP0uLwAKiOH9FxdgMWWuzaL-7u5T1YLelhgQ41nA",
         },
+        .gtest = .{
+            .url = "git+https://github.com/google/googletest?ref=v1.17.0#52eb8108c5bdec04579160ae17225d66034bd723",
+            .hash = "N-V-__8AAEV8PgDOBc81AuVJQ9XhGo46f-4dlQ7sXar_M0_i",
+        },
     },
 }
