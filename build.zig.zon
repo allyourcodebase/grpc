@@ -22,5 +22,13 @@
             .url = "git+https://github.com/google/re2?ref=2022-04-01#0c5616df9c0aaa44c9440d87422012423d91c7d1",
             .hash = "N-V-__8AAGxoGACubi_UB9NHSdrrXU_eABgvR1IT1kRFFCuG",
         },
+        .boringssl = .{
+            .url = "git+https://github.com/google/boringssl#c63fadbde60a2224c22189d14c4001bbd2a3a629",
+            .hash = "N-V-__8AAMk7QghOaiEFo3db_JLRq_fM0eCxR4RaroVJmAaJ",
+        },
+        .cares = .{
+            .url = "git+https://github.com/c-ares/c-ares?ref=v1.34.5#d3a507e920e7af18a5efb7f9f1d8044ed4750013",
+            .hash = "N-V-__8AAP0uLwAKiOH9FxdgMWWuzaL-7u5T1YLelhgQ41nA",
+        },
     },
 }

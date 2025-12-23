@@ -39,9 +39,20 @@ def extractSubLists(prefix, current):
         sublists[f'{prefix}_{a}_{b.replace("-", "_")}'].append(f)
     return sublists
 
+def splitByLanguage(prefix, current):
+    sublists = defaultdict(list)
+    for e in current:
+        if e.endswith('.c'):
+            sublists[f'{prefix}_c'].append(e)
+        else:
+            sublists[f'{prefix}_cpp'].append(e)
+    return sublists
+
 filelists = extractFileLists(lines(), {'LIBGRPC_SRC', 'PUBLIC_HEADERS_C', 'LIBBORINGSSL_SRC', 'LIBCARES_SRC', 'LIBZ_SRC'})
 
 libgrpc = extractSubLists('libgrpc', filelists.pop('LIBGRPC_SRC'))
+filelists |= libgrpc
+libgrpc = splitByLanguage('libgrpc_src_core', filelists.pop('libgrpc_src_core'))
 filelists |= libgrpc
 
 for name, files in filelists.items():
