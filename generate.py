@@ -1,3 +1,4 @@
+import sys
 from collections import defaultdict
 
 def lines():
@@ -31,9 +32,20 @@ def extractFileLists(reader, desired: set[str]):
                 result[dest].append(value)
     return result
 
+def extractSubLists(prefix, current):
+    sublists = defaultdict(list)
+    for e in current:
+        a, b, f = e.split('/', 2)
+        sublists[f'{prefix}_{a}_{b.replace("-", "_")}'].append(f)
+    return sublists
+
 filelists = extractFileLists(lines(), {'LIBGRPC_SRC', 'PUBLIC_HEADERS_C', 'LIBBORINGSSL_SRC', 'LIBCARES_SRC', 'LIBZ_SRC'})
 
+libgrpc = extractSubLists('libgrpc', filelists.pop('LIBGRPC_SRC'))
+filelists |= libgrpc
+
 for name, files in filelists.items():
+    print(name.lower(), file=sys.stderr)
     print('pub const ' + name.lower() + ' = .{')
     for f in files:
         print(f'    "{f}",')
