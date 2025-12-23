@@ -2,7 +2,7 @@ const std = @import("std");
 const file_lists = @import("generated.zig");
 
 const Build = std.Build;
-const ExecutableList = std.ArrayList(*Build.Step.Compile);
+const ExecutableList = std.ArrayList(struct { name: []const u8, mod: *Build.Module });
 
 pub fn build(b: *Build) !void {
     const target = b.standardTargetOptions(.{});
@@ -15,6 +15,54 @@ pub fn build(b: *Build) !void {
     const boringssl = b.dependency("boringssl", .{});
     const cares = b.dependency("cares", .{});
     const gtest = b.dependency("gtest", .{});
+
+    // C-Ares Library
+    const caresmod = b.createModule(.{
+        .target = target,
+        .optimize = optimize,
+    });
+    const libcares = b.addLibrary(.{ .name = "cares", .root_module = caresmod });
+    const cares_config = switch (target.result.os.tag) {
+        .linux => "config_linux",
+        .macos, .ios, .tvos, .watchos => "config_darwin",
+        .freebsd => "config_freebsd",
+        .openbsd => "config_openbsd",
+        else => return error.OsNotSupported,
+    };
+    caresmod.addCSourceFiles(.{
+        .root = cares.path(""),
+        .files = &file_lists.libcares_src,
+        .flags = &c_flags,
+    });
+    caresmod.addCMacro("_GNU_SOURCE", "1");
+    caresmod.addCMacro("_HAS_EXCEPTIONs", "0");
+    caresmod.addCMacro("HAVE_CONFIG_H", "1");
+    caresmod.addIncludePath(upstream.path("third_party/cares"));
+    caresmod.addIncludePath(cares.path("include"));
+    caresmod.addIncludePath(cares.path("src/lib"));
+    caresmod.addIncludePath(cares.path("src/lib/include"));
+    caresmod.addIncludePath(upstream.path("third_party/cares").path(b, cares_config));
+    libcares.installHeadersDirectory(cares.path("include"), "", .{});
+    libcares.installHeader(upstream.path("third_party/cares/ares_build.h"), "ares_build.h");
+    libcares.installHeader(upstream.path("third_party/cares").path(b, cares_config).path(b, "ares_config.h"), "ares_config.h");
+    b.installArtifact(libcares);
+
+    // Abseil
+    const abseilmod = b.createModule(.{
+        .target = target,
+        .optimize = optimize,
+        .link_libcpp = true,
+    });
+    const libabseil = b.addLibrary(.{ .name = "abseil", .root_module = abseilmod });
+    abseilmod.addCSourceFiles(.{
+        .root = abseil.path(""),
+        .files = &file_lists.libgrpc_third_party_abseil_cpp,
+        .flags = &cxx_flags,
+    });
+    abseilmod.addCMacro("OSATOMIC_USE_INLINED", "1");
+    abseilmod.addIncludePath(abseil.path(""));
+    libabseil.installHeadersDirectory(abseil.path(""), "", .{});
+    b.installArtifact(libabseil);
 
     // Core library
     const grpc = b.createModule(.{
@@ -40,13 +88,12 @@ pub fn build(b: *Build) !void {
     grpc.addIncludePath(upstream.path("src/core/ext/upb-gen"));
     grpc.addIncludePath(upstream.path("src/core/ext/upbdefs-gen"));
     grpc.addIncludePath(upstream.path("third_party/upb"));
-    grpc.addIncludePath(upstream.path("third_party/cares"));
     grpc.addIncludePath(upstream.path("third_party/address_sorting/include"));
     grpc.addIncludePath(upstream.path("third_party/xxhash"));
     grpc.addIncludePath(abseil.path(""));
     grpc.addIncludePath(re2.path(""));
     grpc.addIncludePath(boringssl.path("src/include"));
-    grpc.addIncludePath(cares.path("include"));
+    grpc.linkLibrary(libcares);
     libgrpc.installHeadersDirectory(upstream.path("include/grpc"), "grpc", .{});
     b.installArtifact(libgrpc);
 
@@ -84,13 +131,29 @@ pub fn build(b: *Build) !void {
             });
             client_idle.addIncludePath(upstream.path(""));
             client_idle.linkLibrary(libgtest);
-            client_idle.linkLibrary(libgrpc);
-            try tests.append(b.allocator, b.addExecutable(.{ .name = "idle_filter_state", .root_module = client_idle }));
+            try tests.append(b.allocator, .{ .name = "idle_filter_state", .mod = client_idle });
+        }
+        {
+            const mod = b.createModule(.{
+                .target = target,
+                .optimize = optimize,
+                .link_libcpp = true,
+            });
+            mod.addCSourceFile(.{
+                .file = upstream.path("test/core/address_utils/parse_address_test.cc"),
+                .flags = &cxx_flags,
+            });
+            mod.addIncludePath(upstream.path(""));
+            mod.addIncludePath(abseil.path(""));
+            mod.linkLibrary(libgtest);
+            try tests.append(b.allocator, .{ .name = "parse_address", .mod = mod });
         }
 
-        for (tests.items) |exe| {
+        for (tests.items) |ite| {
+            const exe = b.addExecutable(.{ .name = ite.name, .root_module = ite.mod });
             const install_exe = b.addInstallArtifact(exe, .{});
             const run_exe = b.addRunArtifact(exe);
+            ite.mod.linkLibrary(libgrpc);
             example_step.dependOn(&install_exe.step);
             test_step.dependOn(&run_exe.step);
         }
