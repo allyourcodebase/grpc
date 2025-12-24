@@ -92,6 +92,22 @@ pub fn build(b: *Build) !void {
     upbmod.linkLibrary(libutf8);
     b.installArtifact(libupb);
 
+    // BoringSSL
+    const sslmod = b.createModule(.{
+        .target = target,
+        .optimize = optimize,
+        .link_libcpp = true,
+    });
+    const libssl = b.addLibrary(.{ .name = "ssl", .root_module = sslmod });
+    sslmod.addCSourceFiles(.{
+        .root = boringssl.path("src"),
+        .files = &file_lists.libboringssl_src,
+        .flags = &cxx_flags,
+    });
+    sslmod.addIncludePath(boringssl.path("src/include"));
+    libssl.installHeadersDirectory(boringssl.path("src/include/openssl"), "openssl", .{});
+    b.installArtifact(libssl);
+
     // Core library
     const grpc = b.createModule(.{
         .target = target,
@@ -118,10 +134,10 @@ pub fn build(b: *Build) !void {
     grpc.addIncludePath(upstream.path("third_party/xxhash"));
     grpc.addIncludePath(upstream.path("third_party/upb"));
     grpc.addIncludePath(re2.path(""));
-    grpc.addIncludePath(boringssl.path("src/include"));
     grpc.linkLibrary(libcares);
     grpc.linkLibrary(libabseil);
     grpc.linkLibrary(libupb);
+    grpc.linkLibrary(libssl);
     if (target.result.os.tag.isDarwin()) {
         grpc.linkFramework("CoreFoundation", .{});
         grpc.addCMacro("OSATOMIC_USE_INLINED", "1");
