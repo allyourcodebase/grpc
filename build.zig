@@ -146,6 +146,22 @@ pub fn build(b: *Build) !void {
     libaddrsort.installHeadersDirectory(upstream.path("third_party/address_sorting/include/address_sorting"), "address_sorting", .{});
     libs_step.dependOn(&b.addInstallArtifact(libaddrsort, .{}).step);
 
+    // re2
+    const re2mod = b.createModule(.{
+        .target = target,
+        .optimize = optimize,
+        .link_libcpp = true,
+    });
+    const libre2 = b.addLibrary(.{ .name = "re2", .root_module = re2mod });
+    re2mod.addCSourceFiles(.{
+        .root = re2.path(""),
+        .files = &file_lists.libgrpc_third_party_re2,
+        .flags = &cxx_flags,
+    });
+    re2mod.addIncludePath(re2.path(""));
+    libre2.installHeadersDirectory(re2.path("re2"), "re2", .{});
+    libs_step.dependOn(&b.addInstallArtifact(libre2, .{}).step);
+
     // Core library
     const grpc = b.createModule(.{
         .target = target,
@@ -165,13 +181,13 @@ pub fn build(b: *Build) !void {
     grpc.addIncludePath(upstream.path("src/core/ext/upbdefs-gen"));
     grpc.addIncludePath(upstream.path("third_party/xxhash"));
     grpc.addIncludePath(upstream.path("third_party/upb"));
-    grpc.addIncludePath(re2.path(""));
     grpc.linkLibrary(libcares);
     grpc.linkLibrary(libabseil);
     grpc.linkLibrary(libupb);
     grpc.linkLibrary(libssl);
     grpc.linkLibrary(libz);
     grpc.linkLibrary(libaddrsort);
+    grpc.linkLibrary(libre2);
     if (target.result.os.tag.isDarwin()) {
         grpc.linkFramework("CoreFoundation", .{});
         grpc.addCMacro("OSATOMIC_USE_INLINED", "1");
