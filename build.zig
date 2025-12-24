@@ -16,6 +16,8 @@ pub fn build(b: *Build) !void {
     const cares = b.dependency("cares", .{});
     const gtest = b.dependency("gtest", .{});
 
+    const libs_step = b.step("dependencies", "Install libraries libgrpc depends on");
+
     // C-Ares Library
     const caresmod = b.createModule(.{
         .target = target,
@@ -45,7 +47,7 @@ pub fn build(b: *Build) !void {
     libcares.installHeadersDirectory(cares.path("include"), "", .{});
     libcares.installHeader(upstream.path("third_party/cares/ares_build.h"), "ares_build.h");
     libcares.installHeader(upstream.path("third_party/cares").path(b, cares_config).path(b, "ares_config.h"), "ares_config.h");
-    b.installArtifact(libcares);
+    libs_step.dependOn(&b.addInstallArtifact(libcares, .{}).step);
 
     // Abseil
     const abseilmod = b.createModule(.{
@@ -63,7 +65,7 @@ pub fn build(b: *Build) !void {
     libabseil.installHeadersDirectory(abseil.path("absl"), "absl", .{
         .include_extensions = &.{ ".h", ".inc" },
     });
-    b.installArtifact(libabseil);
+    libs_step.dependOn(&b.addInstallArtifact(libabseil, .{}).step);
 
     // UTF8-range
     const utf8mod = b.createModule(.{ .target = target, .optimize = optimize });
@@ -77,7 +79,7 @@ pub fn build(b: *Build) !void {
         upstream.path("third_party/utf8_range/utf8_range.h"),
         "utf8_range.h",
     );
-    b.installArtifact(libutf8);
+    libs_step.dependOn(&b.addInstallArtifact(libutf8, .{}).step);
 
     // upb
     const upbmod = b.createModule(.{ .target = target, .optimize = optimize });
@@ -87,10 +89,17 @@ pub fn build(b: *Build) !void {
         .files = &file_lists.libgrpc_third_party_upb,
         .flags = &c_flags,
     });
+    // Those are all generated upb files
+    upbmod.addCSourceFiles(.{
+        .root = upstream.path("src/core"),
+        .files = &file_lists.libgrpc_src_core_c,
+        .flags = &c_flags,
+    });
     upbmod.addIncludePath(upstream.path("third_party/upb"));
     upbmod.addIncludePath(upstream.path("src/core/ext/upb-gen"));
+    upbmod.addIncludePath(upstream.path("src/core/ext/upbdefs-gen"));
     upbmod.linkLibrary(libutf8);
-    b.installArtifact(libupb);
+    libs_step.dependOn(&b.addInstallArtifact(libupb, .{}).step);
 
     // BoringSSL
     const sslmod = b.createModule(.{
@@ -106,7 +115,7 @@ pub fn build(b: *Build) !void {
     });
     sslmod.addIncludePath(boringssl.path("src/include"));
     libssl.installHeadersDirectory(boringssl.path("src/include/openssl"), "openssl", .{});
-    b.installArtifact(libssl);
+    libs_step.dependOn(&b.addInstallArtifact(libssl, .{}).step);
 
     // Core library
     const grpc = b.createModule(.{
@@ -116,11 +125,6 @@ pub fn build(b: *Build) !void {
     });
     const libgrpc = b.addLibrary(.{ .name = "grpc", .root_module = grpc });
 
-    grpc.addCSourceFiles(.{
-        .root = upstream.path("src/core"),
-        .files = &file_lists.libgrpc_src_core_c,
-        .flags = &c_flags,
-    });
     grpc.addCSourceFiles(.{
         .root = upstream.path("src/core"),
         .files = &file_lists.libgrpc_src_core_cpp,
