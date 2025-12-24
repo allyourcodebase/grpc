@@ -39,6 +39,7 @@ pub fn build(b: *Build) !void {
     });
     caresmod.addCMacro("_GNU_SOURCE", "1");
     caresmod.addCMacro("_HAS_EXCEPTIONS", "0");
+    caresmod.addCMacro("NOMINMAX", "1");
     caresmod.addCMacro("HAVE_CONFIG_H", "1");
     caresmod.addIncludePath(upstream.path("third_party/cares"));
     caresmod.addIncludePath(cares.path("include"));
@@ -130,7 +131,20 @@ pub fn build(b: *Build) !void {
         .files = &file_lists.libz_src,
         .flags = &c_flags,
     });
+    zmod.addCMacro("HAVE_UNISTD_H", "1");
     libs_step.dependOn(&b.addInstallArtifact(libz, .{}).step);
+
+    // Address Sorting
+    const addrsort = b.createModule(.{ .target = target, .optimize = optimize });
+    const libaddrsort = b.addLibrary(.{ .name = "addresssorting", .root_module = addrsort });
+    addrsort.addCSourceFiles(.{
+        .root = upstream.path("third_party/address_sorting"),
+        .files = &file_lists.libgrpc_third_party_address_sorting,
+        .flags = &c_flags,
+    });
+    addrsort.addIncludePath(upstream.path("third_party/address_sorting/include"));
+    libaddrsort.installHeadersDirectory(upstream.path("third_party/address_sorting/include/address_sorting"), "address_sorting", .{});
+    libs_step.dependOn(&b.addInstallArtifact(libaddrsort, .{}).step);
 
     // Core library
     const grpc = b.createModule(.{
@@ -149,7 +163,6 @@ pub fn build(b: *Build) !void {
     grpc.addIncludePath(upstream.path(""));
     grpc.addIncludePath(upstream.path("src/core/ext/upb-gen"));
     grpc.addIncludePath(upstream.path("src/core/ext/upbdefs-gen"));
-    grpc.addIncludePath(upstream.path("third_party/address_sorting/include"));
     grpc.addIncludePath(upstream.path("third_party/xxhash"));
     grpc.addIncludePath(upstream.path("third_party/upb"));
     grpc.addIncludePath(re2.path(""));
@@ -158,6 +171,7 @@ pub fn build(b: *Build) !void {
     grpc.linkLibrary(libupb);
     grpc.linkLibrary(libssl);
     grpc.linkLibrary(libz);
+    grpc.linkLibrary(libaddrsort);
     if (target.result.os.tag.isDarwin()) {
         grpc.linkFramework("CoreFoundation", .{});
         grpc.addCMacro("OSATOMIC_USE_INLINED", "1");
