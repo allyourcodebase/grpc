@@ -35,7 +35,7 @@ pub fn build(b: *Build) !void {
         .flags = &c_flags,
     });
     caresmod.addCMacro("_GNU_SOURCE", "1");
-    caresmod.addCMacro("_HAS_EXCEPTIONs", "0");
+    caresmod.addCMacro("_HAS_EXCEPTIONS", "0");
     caresmod.addCMacro("HAVE_CONFIG_H", "1");
     caresmod.addIncludePath(upstream.path("third_party/cares"));
     caresmod.addIncludePath(cares.path("include"));
@@ -59,10 +59,38 @@ pub fn build(b: *Build) !void {
         .files = &file_lists.libgrpc_third_party_abseil_cpp,
         .flags = &cxx_flags,
     });
-    abseilmod.addCMacro("OSATOMIC_USE_INLINED", "1");
     abseilmod.addIncludePath(abseil.path(""));
-    libabseil.installHeadersDirectory(abseil.path(""), "", .{});
+    libabseil.installHeadersDirectory(abseil.path("absl"), "absl", .{
+        .include_extensions = &.{ ".h", ".inc" },
+    });
     b.installArtifact(libabseil);
+
+    // UTF8-range
+    const utf8mod = b.createModule(.{ .target = target, .optimize = optimize });
+    const libutf8 = b.addLibrary(.{ .name = "utf8-range", .root_module = utf8mod });
+    utf8mod.addCSourceFiles(.{
+        .root = upstream.path("third_party/utf8_range"),
+        .files = &file_lists.libgrpc_third_party_utf8_range,
+        .flags = &c_flags,
+    });
+    libutf8.installHeader(
+        upstream.path("third_party/utf8_range/utf8_range.h"),
+        "utf8_range.h",
+    );
+    b.installArtifact(libutf8);
+
+    // upb
+    const upbmod = b.createModule(.{ .target = target, .optimize = optimize });
+    const libupb = b.addLibrary(.{ .name = "upb", .root_module = upbmod });
+    upbmod.addCSourceFiles(.{
+        .root = upstream.path("third_party/upb"),
+        .files = &file_lists.libgrpc_third_party_upb,
+        .flags = &c_flags,
+    });
+    upbmod.addIncludePath(upstream.path("third_party/upb"));
+    upbmod.addIncludePath(upstream.path("src/core/ext/upb-gen"));
+    upbmod.linkLibrary(libutf8);
+    b.installArtifact(libupb);
 
     // Core library
     const grpc = b.createModule(.{
@@ -82,18 +110,22 @@ pub fn build(b: *Build) !void {
         .files = &file_lists.libgrpc_src_core_cpp,
         .flags = &(cxx_flags ++ .{"-fno-exceptions"}),
     });
-    grpc.addCMacro("OSATOMIC_USE_INLINED", "1");
     grpc.addIncludePath(upstream.path("include"));
     grpc.addIncludePath(upstream.path(""));
     grpc.addIncludePath(upstream.path("src/core/ext/upb-gen"));
     grpc.addIncludePath(upstream.path("src/core/ext/upbdefs-gen"));
-    grpc.addIncludePath(upstream.path("third_party/upb"));
     grpc.addIncludePath(upstream.path("third_party/address_sorting/include"));
     grpc.addIncludePath(upstream.path("third_party/xxhash"));
-    grpc.addIncludePath(abseil.path(""));
+    grpc.addIncludePath(upstream.path("third_party/upb"));
     grpc.addIncludePath(re2.path(""));
     grpc.addIncludePath(boringssl.path("src/include"));
     grpc.linkLibrary(libcares);
+    grpc.linkLibrary(libabseil);
+    grpc.linkLibrary(libupb);
+    if (target.result.os.tag.isDarwin()) {
+        grpc.linkFramework("CoreFoundation", .{});
+        grpc.addCMacro("OSATOMIC_USE_INLINED", "1");
+    }
     libgrpc.installHeadersDirectory(upstream.path("include/grpc"), "grpc", .{});
     b.installArtifact(libgrpc);
 
@@ -140,13 +172,13 @@ pub fn build(b: *Build) !void {
                 .link_libcpp = true,
             });
             mod.addCSourceFile(.{
-                .file = upstream.path("test/core/address_utils/parse_address_test.cc"),
+                .file = upstream.path("test/core/slice/c_slice_buffer_test.cc"),
                 .flags = &cxx_flags,
             });
             mod.addIncludePath(upstream.path(""));
-            mod.addIncludePath(abseil.path(""));
             mod.linkLibrary(libgtest);
-            try tests.append(b.allocator, .{ .name = "parse_address", .mod = mod });
+            mod.linkLibrary(libabseil);
+            try tests.append(b.allocator, .{ .name = "c_slice_buffer", .mod = mod });
         }
 
         for (tests.items) |ite| {
