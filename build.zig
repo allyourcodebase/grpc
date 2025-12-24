@@ -15,6 +15,7 @@ pub fn build(b: *Build) !void {
     const boringssl = b.dependency("boringssl", .{});
     const cares = b.dependency("cares", .{});
     const gtest = b.dependency("gtest", .{});
+    const zlib = b.dependency("zlib", .{});
 
     const libs_step = b.step("dependencies", "Install libraries libgrpc depends on");
 
@@ -111,11 +112,25 @@ pub fn build(b: *Build) !void {
     sslmod.addCSourceFiles(.{
         .root = boringssl.path("src"),
         .files = &file_lists.libboringssl_src,
-        .flags = &cxx_flags,
+        .flags = &(cxx_flags ++ .{"-fno-exceptions"}),
     });
+    sslmod.addCMacro("OPENSSL_NO_ASM", "1");
+    sslmod.addCMacro("_GNU_SOURCE", "1");
+    sslmod.addCMacro("_HAS_EXCEPTIONS", "0");
+    sslmod.addCMacro("NOMINMAX", "1");
     sslmod.addIncludePath(boringssl.path("src/include"));
     libssl.installHeadersDirectory(boringssl.path("src/include/openssl"), "openssl", .{});
     libs_step.dependOn(&b.addInstallArtifact(libssl, .{}).step);
+
+    // zlib
+    const zmod = b.createModule(.{ .target = target, .optimize = optimize });
+    const libz = b.addLibrary(.{ .name = "z", .root_module = zmod });
+    zmod.addCSourceFiles(.{
+        .root = zlib.path(""),
+        .files = &file_lists.libz_src,
+        .flags = &c_flags,
+    });
+    libs_step.dependOn(&b.addInstallArtifact(libz, .{}).step);
 
     // Core library
     const grpc = b.createModule(.{
@@ -142,6 +157,7 @@ pub fn build(b: *Build) !void {
     grpc.linkLibrary(libabseil);
     grpc.linkLibrary(libupb);
     grpc.linkLibrary(libssl);
+    grpc.linkLibrary(libz);
     if (target.result.os.tag.isDarwin()) {
         grpc.linkFramework("CoreFoundation", .{});
         grpc.addCMacro("OSATOMIC_USE_INLINED", "1");

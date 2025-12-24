@@ -44,19 +44,6 @@ pub const public_headers_c = .{
     "include/grpc/status.h",
     "include/grpc/support/workaround_list.h",
 };
-pub const libz_src = .{
-    "third_party/zlib/adler32.c",
-    "third_party/zlib/compress.c",
-    "third_party/zlib/crc32.c",
-    "third_party/zlib/deflate.c",
-    "third_party/zlib/infback.c",
-    "third_party/zlib/inffast.c",
-    "third_party/zlib/inflate.c",
-    "third_party/zlib/inftrees.c",
-    "third_party/zlib/trees.c",
-    "third_party/zlib/uncompr.c",
-    "third_party/zlib/zutil.c",
-};
 pub const libgrpc_third_party_abseil_cpp = .{
     "absl/base/internal/cycleclock.cc",
     "absl/base/internal/low_level_alloc.cc",
@@ -1584,4 +1571,17 @@ pub const libboringssl_src = .{
     "ssl/tls13_server.cc",
     "ssl/tls_method.cc",
     "ssl/tls_record.cc",
+};
+pub const libz_src = .{
+    "adler32.c",
+    "compress.c",
+    "crc32.c",
+    "deflate.c",
+    "infback.c",
+    "inffast.c",
+    "inflate.c",
+    "inftrees.c",
+    "trees.c",
+    "uncompr.c",
+    "zutil.c",
 };

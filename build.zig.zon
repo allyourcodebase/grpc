@@ -34,5 +34,9 @@
             .url = "git+https://github.com/google/googletest?ref=v1.17.0#52eb8108c5bdec04579160ae17225d66034bd723",
             .hash = "N-V-__8AAEV8PgDOBc81AuVJQ9XhGo46f-4dlQ7sXar_M0_i",
         },
+        .zlib = .{
+            .url = "git+https://github.com/madler/zlib?ref=v1.3.1#51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf",
+            .hash = "N-V-__8AAB0eQwD-0MdOEBmz7intriBReIsIDNlukNVoNu6o",
+        },
     },
 }
