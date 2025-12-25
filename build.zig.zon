@@ -2,7 +2,7 @@
     .name = .grpc,
     .version = "1.76.0",
     .fingerprint = 0x2b44e58c15cd55d6,
-    .minimum_zig_version = "0.14.1",
+    .minimum_zig_version = "0.15.0",
 
     .paths = .{
         "build.zig",

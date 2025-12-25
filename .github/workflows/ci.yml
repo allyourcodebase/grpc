@@ -1,0 +1,37 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [master]
+
+  pull_request:
+    branches: [master]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        zig-version: ["master", "0.15.2"]
+        os: [ubuntu-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+      - name: Set up Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: ${{ matrix.zig-version }}
+
+      - name: Build dependencies
+        run: zig build dependencies --summary all
+      - name: Build libgrpc
+        run: zig build --summary new
+      - name: Build test programs
+        run: zig build examples --summary new
+      - name: Run tests
+        run: zig build test --summary new

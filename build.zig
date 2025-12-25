@@ -277,6 +277,7 @@ pub fn build(b: *Build) !void {
             mod.addCSourceFile(.{ .file = upstream.path("test/core/config/core_configuration_test.cc"), .flags = &cxx_flags });
             mod.addIncludePath(upstream.path("src/core/ext/upb-gen"));
             mod.addIncludePath(upstream.path("src/core/ext/upbdefs-gen"));
+            mod.addIncludePath(upstream.path("third_party/upb"));
             tests.appendAssumeCapacity(.{ .name = "core_configuration", .mod = mod });
         }
         {
