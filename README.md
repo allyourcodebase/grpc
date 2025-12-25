@@ -1,9 +1,14 @@
 # libgrpc packages for the Zig build system
 
-Status: Work in progress
+## Status
+
+| Architecture \ OS | Linux | MacOS |
+|:------------------|:-----:|:-----:|
+| x86_64            | ✅    | ✅    |
+| arm 64            | ✅    | ✅    |
 
 | Refname  | libGRPC version | Zig `0.16.x` | Zig `0.15.x` |
-|----------|-----------------|--------------|--------------|
+|----------|-----------------|:------------:|:------------:|
 | `1.76.0` | `v1.76.0`       | ✅           | ✅           |
 
 ## Use
