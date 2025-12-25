@@ -215,6 +215,19 @@ pub fn build(b: *Build) !void {
         gtestmod.addIncludePath(gtest.path("googletest"));
         libgtest.installHeadersDirectory(gtest.path("googletest/include"), "", .{});
 
+        // test_util:build
+        const testbuildmod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libcpp = true,
+        });
+        const libtestbuild = b.addLibrary(.{ .name = "test_util_build", .root_module = testbuildmod });
+        testbuildmod.addCSourceFile(.{
+            .file = upstream.path("test/core/test_util/build.cc"),
+            .flags = &cxx_flags,
+        });
+        libtestbuild.installHeader(upstream.path("test/core/test_util/build.h"), "build.h");
+
         // const testutilbasemod = b.createModule(.{
         //     .target = target,
         //     .optimize = optimize,
@@ -255,44 +268,32 @@ pub fn build(b: *Build) !void {
         defer tests.deinit(b.allocator);
 
         {
-            const mod = b.createModule(.{
-                .target = target,
-                .optimize = optimize,
-                .link_libcpp = true,
-            });
-            mod.addCSourceFile(.{
-                .file = upstream.path("test/core/client_idle/idle_filter_state_test.cc"),
-                .flags = &cxx_flags,
-            });
+            const mod = b.createModule(.{ .target = target, .optimize = optimize, .link_libcpp = true });
+            mod.addCSourceFile(.{ .file = upstream.path("test/core/client_idle/idle_filter_state_test.cc"), .flags = &cxx_flags });
             tests.appendAssumeCapacity(.{ .name = "idle_filter_state", .mod = mod });
         }
         {
-            const mod = b.createModule(.{
-                .target = target,
-                .optimize = optimize,
-                .link_libcpp = true,
-            });
-            mod.addCSourceFile(.{
-                .file = upstream.path("test/core/config/core_configuration_test.cc"),
-                .flags = &cxx_flags,
-            });
+            const mod = b.createModule(.{ .target = target, .optimize = optimize, .link_libcpp = true });
+            mod.addCSourceFile(.{ .file = upstream.path("test/core/config/core_configuration_test.cc"), .flags = &cxx_flags });
             mod.addIncludePath(upstream.path("src/core/ext/upb-gen"));
             mod.addIncludePath(upstream.path("src/core/ext/upbdefs-gen"));
-            mod.linkLibrary(libabseil);
             tests.appendAssumeCapacity(.{ .name = "core_configuration", .mod = mod });
         }
         {
-            const mod = b.createModule(.{
-                .target = target,
-                .optimize = optimize,
-                .link_libcpp = true,
-            });
-            mod.addCSourceFile(.{
-                .file = upstream.path("test/core/config/load_config_test.cc"),
-                .flags = &cxx_flags,
-            });
-            mod.linkLibrary(libabseil);
+            const mod = b.createModule(.{ .target = target, .optimize = optimize, .link_libcpp = true });
+            mod.addCSourceFile(.{ .file = upstream.path("test/core/config/load_config_test.cc"), .flags = &cxx_flags });
             tests.appendAssumeCapacity(.{ .name = "load_config", .mod = mod });
+        }
+        {
+            const mod = b.createModule(.{ .target = target, .optimize = optimize, .link_libcpp = true });
+            mod.addCSourceFile(.{ .file = upstream.path("test/core/slice/slice_string_helpers_test.cc"), .flags = &cxx_flags });
+            tests.appendAssumeCapacity(.{ .name = "slice_string_helpers", .mod = mod });
+        }
+        {
+            const mod = b.createModule(.{ .target = target, .optimize = optimize, .link_libcpp = true });
+            mod.addCSourceFile(.{ .file = upstream.path("test/core/slice/slice_test.cc"), .flags = &cxx_flags });
+            mod.linkLibrary(libtestbuild);
+            tests.appendAssumeCapacity(.{ .name = "slice", .mod = mod });
         }
 
         for (tests.items) |ite| {
@@ -302,6 +303,7 @@ pub fn build(b: *Build) !void {
             ite.mod.addIncludePath(upstream.path(""));
             ite.mod.linkLibrary(libgrpc);
             ite.mod.linkLibrary(libgtest);
+            ite.mod.linkLibrary(libabseil);
             example_step.dependOn(&install_exe.step);
             test_step.dependOn(&run_exe.step);
         }
@@ -375,9 +377,6 @@ const gtest_srcs = .{
 //         "test_config.cc",
 //         "test_tcp_server.cc",
 //         "tls_utils.cc",
-//     } ++ .{
-//         "stack_tracer.cc",
-//         "build.cc",
 //     };
 
 //     pub const hdrs = .{
@@ -387,8 +386,5 @@ const gtest_srcs = .{
 //         "test_config.h",
 //         "test_tcp_server.h",
 //         "tls_utils.h",
-//     } ++ .{
-//         "stack_tracer.h",
-//         "build.h",
 //     };
 // };
