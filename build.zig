@@ -23,6 +23,7 @@ pub fn build(b: *Build) !void {
     const caresmod = b.createModule(.{
         .target = target,
         .optimize = optimize,
+        .link_libc = true,
     });
     const libcares = b.addLibrary(.{ .name = "cares", .root_module = caresmod });
     const cares_config = switch (target.result.os.tag) {
@@ -70,7 +71,11 @@ pub fn build(b: *Build) !void {
     libs_step.dependOn(&b.addInstallArtifact(libabseil, .{}).step);
 
     // UTF8-range
-    const utf8mod = b.createModule(.{ .target = target, .optimize = optimize });
+    const utf8mod = b.createModule(.{
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+    });
     const libutf8 = b.addLibrary(.{ .name = "utf8-range", .root_module = utf8mod });
     utf8mod.addCSourceFiles(.{
         .root = upstream.path("third_party/utf8_range"),
@@ -84,7 +89,11 @@ pub fn build(b: *Build) !void {
     libs_step.dependOn(&b.addInstallArtifact(libutf8, .{}).step);
 
     // upb
-    const upbmod = b.createModule(.{ .target = target, .optimize = optimize });
+    const upbmod = b.createModule(.{
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+    });
     const libupb = b.addLibrary(.{ .name = "upb", .root_module = upbmod });
     upbmod.addCSourceFiles(.{
         .root = upstream.path("third_party/upb"),
@@ -124,7 +133,11 @@ pub fn build(b: *Build) !void {
     libs_step.dependOn(&b.addInstallArtifact(libssl, .{}).step);
 
     // zlib
-    const zmod = b.createModule(.{ .target = target, .optimize = optimize });
+    const zmod = b.createModule(.{
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+    });
     const libz = b.addLibrary(.{ .name = "z", .root_module = zmod });
     zmod.addCSourceFiles(.{
         .root = zlib.path(""),
@@ -135,7 +148,11 @@ pub fn build(b: *Build) !void {
     libs_step.dependOn(&b.addInstallArtifact(libz, .{}).step);
 
     // Address Sorting
-    const addrsort = b.createModule(.{ .target = target, .optimize = optimize });
+    const addrsort = b.createModule(.{
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+    });
     const libaddrsort = b.addLibrary(.{ .name = "addresssorting", .root_module = addrsort });
     addrsort.addCSourceFiles(.{
         .root = upstream.path("third_party/address_sorting"),
