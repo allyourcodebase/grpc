@@ -195,41 +195,76 @@ pub fn build(b: *Build) !void {
     libgrpc.installHeadersDirectory(upstream.path("include/grpc"), "grpc", .{});
     b.installArtifact(libgrpc);
 
-    // Googletest library
-    const gtestmod = b.createModule(.{
-        .target = target,
-        .optimize = optimize,
-        .link_libcpp = true,
-    });
-    const libgtest = b.addLibrary(.{ .name = "gtest", .root_module = gtestmod });
-    gtestmod.addCSourceFiles(.{
-        .root = gtest.path("googletest/src"),
-        .files = &gtest_srcs,
-        .flags = &cxx_flags,
-    });
-    gtestmod.addIncludePath(gtest.path("googletest/include"));
-    gtestmod.addIncludePath(gtest.path("googletest"));
-    libgtest.installHeadersDirectory(gtest.path("googletest/include"), "", .{});
-
     { // Build tests to ensure no symbols are missing
         const example_step = b.step("examples", "Build example programs");
         const test_step = b.step("test", "Run test programs");
 
+        // Googletest library
+        const gtestmod = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+            .link_libcpp = true,
+        });
+        const libgtest = b.addLibrary(.{ .name = "gtest", .root_module = gtestmod });
+        gtestmod.addCSourceFiles(.{
+            .root = gtest.path("googletest/src"),
+            .files = &gtest_srcs,
+            .flags = &cxx_flags,
+        });
+        gtestmod.addIncludePath(gtest.path("googletest/include"));
+        gtestmod.addIncludePath(gtest.path("googletest"));
+        libgtest.installHeadersDirectory(gtest.path("googletest/include"), "", .{});
+
+        // const testutilbasemod = b.createModule(.{
+        //     .target = target,
+        //     .optimize = optimize,
+        //     .link_libcpp = true,
+        // });
+        // const libtestutilbase = b.addLibrary(.{ .name = "grpc_test_util_base", .root_module = testutilbasemod });
+        // testutilbasemod.addCSourceFiles(.{
+        //     .root = upstream.path("test/core/test_util"),
+        //     .files = &grpc_test_util_base.srcs,
+        //     .flags = &cxx_flags,
+        // });
+        // testutilbasemod.addIncludePath(upstream.path(""));
+        // testutilbasemod.linkLibrary(libgrpc);
+        // libtestutilbase.installHeadersDirectory(upstream.path("test/core/test_util"), "", .{
+        //     .include_extensions = &grpc_test_util_base.hdrs,
+        // });
+
+        // const testutilmod = b.createModule(.{
+        //     .target = target,
+        //     .optimize = optimize,
+        //     .link_libcpp = true,
+        // });
+        // const libtestutil = b.addLibrary(.{ .name = "grpc_test_util", .root_module = testutilmod });
+        // testutilmod.addCSourceFiles(.{
+        //     .root = upstream.path("test/core/test_util"),
+        //     .files = &grpc_test_util.srcs,
+        //     .flags = &cxx_flags,
+        // });
+        // testutilmod.addIncludePath(upstream.path(""));
+        // testutilmod.addIncludePath(upstream.path("src/core/ext/upb-gen"));
+        // testutilmod.addIncludePath(upstream.path("src/core/ext/upbdefs-gen"));
+        // testutilmod.linkLibrary(libtestutilbase);
+        // libtestutilbase.installHeadersDirectory(upstream.path("test/core/test_util"), "", .{
+        //     .include_extensions = &grpc_test_util.hdrs,
+        // });
+
         var tests: ExecutableList = try .initCapacity(b.allocator, 64);
+        defer tests.deinit(b.allocator);
 
         {
-            const client_idle = b.createModule(.{
+            const mod = b.createModule(.{
                 .target = target,
                 .optimize = optimize,
                 .link_libcpp = true,
             });
-            client_idle.addCSourceFile(.{
+            mod.addCSourceFile(.{
                 .file = upstream.path("test/core/client_idle/idle_filter_state_test.cc"),
                 .flags = &cxx_flags,
             });
-            client_idle.addIncludePath(upstream.path(""));
-            client_idle.linkLibrary(libgtest);
-            try tests.append(b.allocator, .{ .name = "idle_filter_state", .mod = client_idle });
+            tests.appendAssumeCapacity(.{ .name = "idle_filter_state", .mod = mod });
         }
         {
             const mod = b.createModule(.{
@@ -238,20 +273,35 @@ pub fn build(b: *Build) !void {
                 .link_libcpp = true,
             });
             mod.addCSourceFile(.{
-                .file = upstream.path("test/core/slice/c_slice_buffer_test.cc"),
+                .file = upstream.path("test/core/config/core_configuration_test.cc"),
                 .flags = &cxx_flags,
             });
-            mod.addIncludePath(upstream.path(""));
-            mod.linkLibrary(libgtest);
+            mod.addIncludePath(upstream.path("src/core/ext/upb-gen"));
+            mod.addIncludePath(upstream.path("src/core/ext/upbdefs-gen"));
             mod.linkLibrary(libabseil);
-            try tests.append(b.allocator, .{ .name = "c_slice_buffer", .mod = mod });
+            tests.appendAssumeCapacity(.{ .name = "core_configuration", .mod = mod });
+        }
+        {
+            const mod = b.createModule(.{
+                .target = target,
+                .optimize = optimize,
+                .link_libcpp = true,
+            });
+            mod.addCSourceFile(.{
+                .file = upstream.path("test/core/config/load_config_test.cc"),
+                .flags = &cxx_flags,
+            });
+            mod.linkLibrary(libabseil);
+            tests.appendAssumeCapacity(.{ .name = "load_config", .mod = mod });
         }
 
         for (tests.items) |ite| {
             const exe = b.addExecutable(.{ .name = ite.name, .root_module = ite.mod });
             const install_exe = b.addInstallArtifact(exe, .{});
             const run_exe = b.addRunArtifact(exe);
+            ite.mod.addIncludePath(upstream.path(""));
             ite.mod.linkLibrary(libgrpc);
+            ite.mod.linkLibrary(libgtest);
             example_step.dependOn(&install_exe.step);
             test_step.dependOn(&run_exe.step);
         }
@@ -290,3 +340,55 @@ const gtest_srcs = .{
     "gtest-typed-test.cc",
     "gtest.cc",
 };
+
+// const grpc_test_util_base = struct {
+//     pub const srcs = .{
+//         "cmdline.cc",
+//         "grpc_profiler.cc",
+//         "histogram.cc",
+//         "mock_endpoint.cc",
+//         "parse_hexstring.cc",
+//         "resolve_localhost_ip46.cc",
+//         "slice_splitter.cc",
+//         "tracer_util.cc",
+//     };
+
+//     pub const hdrs = .{
+//         "cmdline.h",
+//         "evaluate_args_test_util.h",
+//         "grpc_profiler.h",
+//         "histogram.h",
+//         "mock_endpoint.h",
+//         "parse_hexstring.h",
+//         "resolve_localhost_ip46.h",
+//         "slice_splitter.h",
+//         "tracer_util.h",
+//     };
+// };
+
+// const grpc_test_util = struct {
+//     pub const srcs = .{
+//         "port.cc",
+//         "port_ci.cc",
+//         "port_server_client.cc",
+//         "reconnect_server.cc",
+//         "test_config.cc",
+//         "test_tcp_server.cc",
+//         "tls_utils.cc",
+//     } ++ .{
+//         "stack_tracer.cc",
+//         "build.cc",
+//     };
+
+//     pub const hdrs = .{
+//         "port.h",
+//         "reconnect_server.h",
+//         "port_server_client.h",
+//         "test_config.h",
+//         "test_tcp_server.h",
+//         "tls_utils.h",
+//     } ++ .{
+//         "stack_tracer.h",
+//         "build.h",
+//     };
+// };
