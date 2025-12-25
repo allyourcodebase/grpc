@@ -2,6 +2,28 @@
 
 Status: Work in progress
 
+| Refname  | libGRPC version | Zig `0.16.x` | Zig `0.15.x` |
+|----------|-----------------|--------------|--------------|
+| `1.76.0` | `v1.76.0`       | ✅           | ✅           |
+
+## Use
+
+Add the dependency in your `build.zig.zon` by running the following command:
+```zig
+zig fetch --save git+https://github.com/allyourcodebase/grpc#master
+```
+
+Then, in your `build.zig`:
+```zig
+const grpc = b.dependency("grpc", { .target = target, .optimize = optimize });
+
+// to use from Zig:
+mod.addImport("cgrpc", grpc.module("cgrpc"));
+
+// to use from C:
+exe.linkLibrary(grpc.artifact("grpc"));
+```
+
 ## Bump dependencies
 
 When bumping upstream version, also bump dependencies. Example:

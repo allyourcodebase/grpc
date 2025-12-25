@@ -263,13 +263,15 @@ pub fn build(b: *Build) !void {
             \\#include <grpc/credentials.h>
             \\#include <grpc/byte_buffer_reader.h>
         );
-        const binding = b.addTranslateC(.{
+        const grpc_capi = b.addTranslateC(.{
             .root_source_file = try include_all.getDirectory().join(b.allocator, "grpc_api.h"),
             .target = target,
             .optimize = optimize,
         });
-        binding.addIncludePath(upstream.path("include"));
-        _ = binding.addModule("cgrpc");
+        grpc_capi.addIncludePath(upstream.path("include"));
+
+        const bindings = grpc_capi.addModule("cgrpc");
+        bindings.linkLibrary(libgrpc);
     }
 }
 
