@@ -1,4 +1,4 @@
-# libgrpc packages for the Zig build system
+# gRPC packaged for the Zig build system
 
 ## Status
 
