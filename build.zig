@@ -7,6 +7,11 @@ const ExecutableList = std.ArrayList(struct { name: []const u8, mod: *Build.Modu
 pub fn build(b: *Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
+    const linkmode = b.option(
+        std.builtin.LinkMode,
+        "link_mode",
+        "Compile static or dynamic libraries. Defaults to dynamic",
+    ) orelse .dynamic;
 
     // Dependencies
     const upstream = b.dependency("upstream", .{});
@@ -185,7 +190,11 @@ pub fn build(b: *Build) !void {
         .optimize = optimize,
         .link_libcpp = true,
     });
-    const libgrpc = b.addLibrary(.{ .name = "grpc", .root_module = grpc });
+    const libgrpc = b.addLibrary(.{
+        .name = "grpc",
+        .root_module = grpc,
+        .linkage = linkmode,
+    });
 
     grpc.addCSourceFiles(.{
         .root = upstream.path("src/core"),
@@ -322,6 +331,8 @@ pub fn build(b: *Build) !void {
             ite.mod.linkLibrary(libgrpc);
             ite.mod.linkLibrary(libgtest);
             ite.mod.linkLibrary(libabseil);
+            if (target.result.os.tag.isDarwin())
+                ite.mod.linkFramework("CoreFoundation", .{});
             example_step.dependOn(&install_exe.step);
             test_step.dependOn(&run_exe.step);
         }

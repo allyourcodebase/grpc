@@ -7,26 +7,39 @@
 | x86_64            | ✅    | ✅    |
 | arm 64            | ✅    | ✅    |
 
-| Refname  | libGRPC version | Zig `0.16.x` | Zig `0.15.x` |
-|----------|-----------------|:------------:|:------------:|
-| `1.76.0` | `v1.76.0`       | ✅           | ✅           |
+| Refname    | libGRPC version | Zig `0.16.x` | Zig `0.15.x` |
+|------------|-----------------|:------------:|:------------:|
+| `1.76.0+1` | `v1.76.0`       | ✅           | ✅           |
 
 ## Use
 
-Add the dependency in your `build.zig.zon` by running the following command:
+Add the dependency to your `build.zig.zon` by running the following command:
 ```zig
 zig fetch --save git+https://github.com/allyourcodebase/grpc#master
 ```
 
 Then, in your `build.zig`:
 ```zig
-const grpc = b.dependency("grpc", { .target = target, .optimize = optimize });
+const grpc = b.dependency("grpc", {
+	.target = target,
+	.optimize = optimize,
+	.link_mode = .dynamic,
+});
 
 // to use from Zig:
 mod.addImport("cgrpc", grpc.module("cgrpc"));
 
 // to use from C:
 exe.linkLibrary(grpc.artifact("grpc"));
+```
+
+## Options
+
+```
+  -Dlink_mode=[enum]           Compile static or dynamic libraries. Defaults to dynamic
+                                 Supported Values:
+                                   static
+                                   dynamic
 ```
 
 ## Bump dependencies
