@@ -150,6 +150,9 @@ pub fn build(b: *Build) !void {
         .flags = &c_flags,
     });
     zmod.addCMacro("HAVE_UNISTD_H", "1");
+    libz.installHeadersDirectory(zlib.path(""), "", .{
+        .include_extensions = &.{ "zconf.h", "zlib.h" },
+    });
     libs_step.dependOn(&b.addInstallArtifact(libz, .{}).step);
 
     // Address Sorting
