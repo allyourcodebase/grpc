@@ -12,6 +12,11 @@ pub fn build(b: *Build) !void {
         "link_mode",
         "Compile static or dynamic libraries. Defaults to dynamic",
     ) orelse .dynamic;
+    const pic = b.option(
+        bool,
+        "pic",
+        "Produce Position Independent Code. Defaults to true when link_mode is dynamic",
+    ) orelse (linkmode == .dynamic);
 
     // Dependencies
     const upstream = b.dependency("upstream", .{});
@@ -29,6 +34,7 @@ pub fn build(b: *Build) !void {
         .target = target,
         .optimize = optimize,
         .link_libc = true,
+        .pic = pic,
     });
     const libcares = b.addLibrary(.{ .name = "cares", .root_module = caresmod });
     const cares_config = switch (target.result.os.tag) {
@@ -62,6 +68,7 @@ pub fn build(b: *Build) !void {
         .target = target,
         .optimize = optimize,
         .link_libcpp = true,
+        .pic = pic,
     });
     const libabseil = b.addLibrary(.{ .name = "abseil", .root_module = abseilmod });
     abseilmod.addCSourceFiles(.{
@@ -80,6 +87,7 @@ pub fn build(b: *Build) !void {
         .target = target,
         .optimize = optimize,
         .link_libc = true,
+        .pic = pic,
     });
     const libutf8 = b.addLibrary(.{ .name = "utf8-range", .root_module = utf8mod });
     utf8mod.addCSourceFiles(.{
@@ -98,6 +106,7 @@ pub fn build(b: *Build) !void {
         .target = target,
         .optimize = optimize,
         .link_libc = true,
+        .pic = pic,
     });
     const libupb = b.addLibrary(.{ .name = "upb", .root_module = upbmod });
     upbmod.addCSourceFiles(.{
@@ -122,6 +131,7 @@ pub fn build(b: *Build) !void {
         .target = target,
         .optimize = optimize,
         .link_libcpp = true,
+        .pic = pic,
     });
     const libssl = b.addLibrary(.{ .name = "ssl", .root_module = sslmod });
     sslmod.addCSourceFiles(.{
@@ -142,6 +152,7 @@ pub fn build(b: *Build) !void {
         .target = target,
         .optimize = optimize,
         .link_libc = true,
+        .pic = pic,
     });
     const libz = b.addLibrary(.{ .name = "z", .root_module = zmod });
     zmod.addCSourceFiles(.{
@@ -160,6 +171,7 @@ pub fn build(b: *Build) !void {
         .target = target,
         .optimize = optimize,
         .link_libc = true,
+        .pic = pic,
     });
     const libaddrsort = b.addLibrary(.{ .name = "addresssorting", .root_module = addrsort });
     addrsort.addCSourceFiles(.{
@@ -176,6 +188,7 @@ pub fn build(b: *Build) !void {
         .target = target,
         .optimize = optimize,
         .link_libcpp = true,
+        .pic = pic,
     });
     const libre2 = b.addLibrary(.{ .name = "re2", .root_module = re2mod });
     re2mod.addCSourceFiles(.{
@@ -192,6 +205,7 @@ pub fn build(b: *Build) !void {
         .target = target,
         .optimize = optimize,
         .link_libcpp = true,
+        .pic = pic,
     });
     const libgrpc = b.addLibrary(.{
         .name = "grpc",

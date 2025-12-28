@@ -24,6 +24,7 @@ const grpc = b.dependency("grpc", {
 	.target = target,
 	.optimize = optimize,
 	.link_mode = .dynamic,
+	.pic = true,
 });
 
 // to use from Zig:
@@ -40,6 +41,7 @@ exe.linkLibrary(grpc.artifact("grpc"));
                                  Supported Values:
                                    static
                                    dynamic
+  -Dpic=[bool]                 Produce Position Independent Code. Defaults to true when link_mode is dynamic
 ```
 
 ## Bump dependencies
