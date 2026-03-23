@@ -14,8 +14,8 @@
 
     .dependencies = .{
         .upstream = .{
-            .url = "git+https://github.com/grpc/grpc?ref=v1.78.0-pre2#9840ecd84d075e53d5a01b93e3ea7c71cb641944",
-            .hash = "N-V-__8AANiLgwRwrmMBnw3pxUngchdxa6Ae15geCK2Wm3MH",
+            .url = "git+https://github.com/grpc/grpc?ref=v1.78.0#5e6ba94242b92e363220bc2163d55ce3554d4ecc",
+            .hash = "N-V-__8AAHSMgwSDghK8yeqM9wSUVGCQeIAbJqbo8cSytPZ7",
         },
         .abseil = .{
             .url = "git+https://github.com/abseil/abseil-cpp?ref=20250512.1#76bb24329e8bf5f39704eb10d21b9a80befa7c81",
