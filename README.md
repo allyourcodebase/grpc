@@ -7,11 +7,11 @@
 | x86_64            | ✅    | ✅    |
 | arm 64            | ✅    | ✅    |
 
-| Refname     | libGRPC version             | Core version | Zig `0.16.x` | Zig `0.15.x` |
-|-------------|-----------------------------|--------------|:------------:|:------------:|
-| `grpc-1.80` | `v1.80.0-pre1` "glimmering" | `53.0.0`     | ✅           | ✅           |
-| `1.78.1+1`  | `v1.78.1` "gusty"           | `52.0.0`     | ✅           | ✅           |
-| `1.76.0+2`  | `v1.76.0` "genuine"         | `51.0.0`     | ✅           | ✅           |
+| Refname    | libGRPC version        | Core version | Zig `0.16.x` | Zig `0.15.x` |
+|:-----------|:-----------------------|-------------:|:------------:|:------------:|
+| `1.80.0`   | `v1.80.0` "glimmering" |     `53.0.0` | ✅           | ✅           |
+| `1.78.1+1` | `v1.78.1` "gusty"      |     `52.0.0` | ✅           | ✅           |
+| `1.76.0+2` | `v1.76.0` "genuine"    |     `51.0.0` | ✅           | ✅           |
 
 ## Use
 
@@ -51,7 +51,7 @@ exe.linkLibrary(grpc.artifact("grpc"));
 When bumping upstream version, also bump dependencies. Example:
 
 ```shell
-zig fetch --save=upstream  git+https://github.com/grpc/grpc#v1.78.1
+zig fetch --save=upstream  git+https://github.com/grpc/grpc#v1.80.0
 zig fetch --save=abseil    git+https://github.com/abseil/abseil-cpp#20250512.1
 zig fetch --save=re2       git+https://github.com/google/re2#2022-04-01
 zig fetch --save=boringssl git+https://github.com/google/boringssl#c63fadbde60a2224c22189d14c4001bbd2a3a629
