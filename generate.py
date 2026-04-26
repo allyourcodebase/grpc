@@ -1,13 +1,6 @@
 import sys
 from collections import defaultdict
 
-def lines():
-    while True:
-        try:
-            yield input()
-        except:
-            break
-
 def extractFileLists(reader, desired: set[str]):
     result = defaultdict(list)
     inside = None
@@ -48,7 +41,7 @@ def splitByLanguage(prefix, current):
             sublists[f'{prefix}_cpp'].append(e)
     return sublists
 
-filelists = extractFileLists(lines(), {'LIBGRPC_SRC', 'PUBLIC_HEADERS_C', 'LIBBORINGSSL_SRC', 'LIBCARES_SRC', 'LIBZ_SRC'})
+filelists = extractFileLists(sys.stdin, {'LIBGRPC_SRC', 'PUBLIC_HEADERS_C', 'LIBBORINGSSL_SRC', 'LIBCARES_SRC', 'LIBZ_SRC'})
 
 libgrpc = extractSubLists('libgrpc', filelists.pop('LIBGRPC_SRC'))
 filelists |= libgrpc
