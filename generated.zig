@@ -730,6 +730,7 @@ pub const libgrpc_src_core_cpp = .{
     "telemetry/tcp_tracer.cc",
     "transport/auth_context.cc",
     "transport/endpoint_transport_client_channel_factory.cc",
+    "transport/session_endpoint.cc",
     "tsi/alts/crypt/aes_gcm.cc",
     "tsi/alts/crypt/gsec.cc",
     "tsi/alts/frame_protector/alts_counter.cc",
