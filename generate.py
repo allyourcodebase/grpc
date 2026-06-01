@@ -48,7 +48,7 @@ filelists |= libgrpc
 libgrpc = splitByLanguage('libgrpc_src_core', filelists.pop('libgrpc_src_core'))
 filelists |= libgrpc
 filelists['libcares_src'] = [f.split('/', 3)[-1] for f in filelists.pop('LIBCARES_SRC')]
-filelists['libboringssl_src'] = [f.split('/', 3)[-1] for f in filelists.pop('LIBBORINGSSL_SRC')]
+filelists['libboringssl_src'] = [f.split('/', 2)[-1] for f in filelists.pop('LIBBORINGSSL_SRC')]
 filelists['libz_src'] = [f.split('/', 2)[-1] for f in filelists.pop('LIBZ_SRC')]
 
 for name, files in filelists.items():
