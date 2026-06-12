@@ -135,7 +135,7 @@ pub fn build(b: *Build) !void {
     });
     const libssl = b.addLibrary(.{ .name = "ssl", .root_module = sslmod });
     sslmod.addCSourceFiles(.{
-        .root = boringssl.path("src"),
+        .root = boringssl.path(""),
         .files = &file_lists.libboringssl_src,
         .flags = &(cxx_flags ++ .{"-fno-exceptions"}),
     });
@@ -143,8 +143,8 @@ pub fn build(b: *Build) !void {
     sslmod.addCMacro("_GNU_SOURCE", "1");
     sslmod.addCMacro("_HAS_EXCEPTIONS", "0");
     sslmod.addCMacro("NOMINMAX", "1");
-    sslmod.addIncludePath(boringssl.path("src/include"));
-    libssl.installHeadersDirectory(boringssl.path("src/include/openssl"), "openssl", .{});
+    sslmod.addIncludePath(boringssl.path("include"));
+    libssl.installHeadersDirectory(boringssl.path("include/openssl"), "openssl", .{});
     libs_step.dependOn(&b.addInstallArtifact(libssl, .{}).step);
 
     // zlib
