@@ -1,6 +1,6 @@
 .{
     .name = .grpc,
-    .version = "1.82.2",
+    .version = "1.83.0",
     .fingerprint = 0x2b44e58c15cd55d6,
     .minimum_zig_version = "0.15.0",
 
@@ -14,8 +14,8 @@
 
     .dependencies = .{
         .upstream = .{
-            .url = "git+https://github.com/grpc/grpc?ref=v1.82.2#68370e4b827a662bef1f6ff264c92985a637e00f",
-            .hash = "N-V-__8AAOahvgTG8yHAMPQdJMEIBBZcL2bTHaLLQY2ybqd0",
+            .url = "git+https://github.com/grpc/grpc?ref=v1.83.0#c876f4da50f7da2f331888b88b2a7243514139fe",
+            .hash = "N-V-__8AAPd6yQSfQSXhndcbNAo9YwSAT8Ucl9zQfDFwD5fB",
         },
         .abseil = .{
             .url = "git+https://github.com/abseil/abseil-cpp?ref=20250512.1#76bb24329e8bf5f39704eb10d21b9a80befa7c81",
