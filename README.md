@@ -26,7 +26,7 @@ zig fetch --save git+https://github.com/allyourcodebase/grpc#master
 
 Then, in your `build.zig`:
 ```zig
-const grpc = b.dependency("grpc", {
+const grpc = b.dependency("grpc", .{
 	.target = target,
 	.optimize = optimize,
 	.link_mode = .dynamic,
