@@ -12,7 +12,7 @@ HASH=$(zig fetch $FETCH_ARG)
 zig fetch --save=upstream $FETCH_ARG
 
 # 2. Re-generate the file lists
-uv run python generate.py < zig-pkg/$HASH/Makefile | zig fmt --stdin > generated.zig
+uv run generate.py < zig-pkg/$HASH/Makefile | zig fmt --stdin > generated.zig
 
 # 3. Bump the package version
 sed "s|\([.]version *= *\).*|\1\"$VERSION\",|" build.zig.zon > tmp.zon
