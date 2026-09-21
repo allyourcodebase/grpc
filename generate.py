@@ -46,7 +46,7 @@ def splitByLanguage(prefix, current):
             sublists[f'{prefix}_cpp'].append(e)
     return sublists
 
-filelists = extractFileLists(sys.stdin, {'LIBGRPC_SRC', 'PUBLIC_HEADERS_C', 'LIBBORINGSSL_SRC', 'LIBCARES_SRC', 'LIBZ_SRC'})
+filelists = extractFileLists(sys.stdin, {'LIBGRPC_SRC', 'PUBLIC_HEADERS_C', 'LIBBORINGSSL_SRC', 'LIBCARES_SRC', 'LIBZ_SRC', 'CORE_VERSION'})
 
 libgrpc = extractSubLists('libgrpc', filelists.pop('LIBGRPC_SRC'))
 filelists |= libgrpc
@@ -55,6 +55,14 @@ filelists |= libgrpc
 filelists['libcares_src'] = [f.split('/', 3)[-1] for f in filelists.pop('LIBCARES_SRC')]
 filelists['libboringssl_src'] = [f.split('/', 2)[-1] for f in filelists.pop('LIBBORINGSSL_SRC')]
 filelists['libz_src'] = [f.split('/', 2)[-1] for f in filelists.pop('LIBZ_SRC')]
+
+core_version = filelists.pop('CORE_VERSION')[0].split('.')
+
+print(core_version, file=sys.stderr)
+print('const std = @import("std");')
+print('pub const core_version : std.SemanticVersion = .{', end='')
+print(f' .major = {core_version[0]}, .minor = {core_version[1]}, .patch = {core_version[2]}', end='')
+print(' };')
 
 for name, files in filelists.items():
     print(name.lower(), file=sys.stderr)

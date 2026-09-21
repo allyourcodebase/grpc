@@ -211,6 +211,7 @@ pub fn build(b: *Build) !void {
         .name = "grpc",
         .root_module = grpc,
         .linkage = linkmode,
+        .version = file_lists.core_version,
     });
 
     grpc.addCSourceFiles(.{

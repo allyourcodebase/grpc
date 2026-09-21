@@ -1,3 +1,5 @@
+const std = @import("std");
+pub const core_version: std.SemanticVersion = .{ .major = 56, .minor = 0, .patch = 0 };
 pub const public_headers_c = .{
     "include/grpc/byte_buffer.h",
     "include/grpc/byte_buffer_reader.h",
