@@ -192,7 +192,6 @@ pub const libgrpc_third_party_abseil_cpp = .{
     "absl/time/internal/cctz/src/zone_info_source.cc",
     "absl/time/time.cc",
     "absl/types/source_location.cc",
-    "absl/time/internal/cctz/src/time_zone_name_win.cc",
 };
 pub const libgrpc_third_party_address_sorting = .{
     "address_sorting.c",

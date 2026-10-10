@@ -9,8 +9,13 @@ from collections import defaultdict
 def extractFileLists(reader, desired: set[str]):
     result = defaultdict(list)
     inside = None
+    in_condition = 0
     for line in reader:
-        if inside is None and '=' in line:
+        if line.startswith('if'):
+            in_condition += 1
+        elif line.startswith('endif'):
+            in_condition -= 1
+        elif not in_condition and not inside and '=' in line:
             sep = '+=' if '+=' in line else '='
             assigned, value = map(str.strip, line.split(sep, 1))
             if assigned in desired:
