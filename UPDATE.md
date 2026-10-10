@@ -7,8 +7,8 @@ For this package maintainers: How to update the package for new upstream release
 Check upstream and copy the pinned versions
 
 ```shell
-zig fetch --save=abseil    git+https://github.com/abseil/abseil-cpp#20250512.1
-zig fetch --save=boringssl git+https://github.com/google/boringssl#0.20250415.0
+zig fetch --save=abseil    git+https://github.com/abseil/abseil-cpp#20260526.0
+zig fetch --save=boringssl git+https://github.com/google/boringssl#0.20260616.0
 zig fetch --save=cares     git+https://github.com/c-ares/c-ares#v1.34.5
 zig fetch --save=gtest     git+https://github.com/google/googletest#v1.17.0
 zig fetch --save=re2       git+https://github.com/google/re2#2022-04-01

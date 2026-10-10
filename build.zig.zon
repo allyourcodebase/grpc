@@ -1,6 +1,6 @@
 .{
     .name = .grpc,
-    .version = "1.84.0",
+    .version = "1.85.0-pre1",
     .fingerprint = 0x2b44e58c15cd55d6,
     .minimum_zig_version = "0.15.0",
 
@@ -14,20 +14,20 @@
 
     .dependencies = .{
         .upstream = .{
-            .url = "git+https://github.com/grpc/grpc?ref=v1.84.0#3252a89f10d8e92997862167ca7d095ecda85973",
-            .hash = "N-V-__8AAEAI2gQ3-SlltEW8Z1zcxlA_lFurJRzCIgeqs0lo",
+            .url = "git+https://github.com/grpc/grpc?ref=v1.85.0-pre1#cc11ee7e32957382ec96ce02065aa870b7089323",
+            .hash = "N-V-__8AAL0I3gSsV3C-0ndgBSMMHLly3A8CgeNx1x8Gk1dK",
         },
         .abseil = .{
-            .url = "git+https://github.com/abseil/abseil-cpp?ref=20250512.1#76bb24329e8bf5f39704eb10d21b9a80befa7c81",
-            .hash = "N-V-__8AAPVZnwDbTjOwxj7Svc8jGQDVnvG3Qz1XJ-L4fuL2",
+            .url = "git+https://github.com/abseil/abseil-cpp?ref=20260526.0#5650e9cf76d3be4318d5fa3af38ee483ddfd5e4a",
+            .hash = "N-V-__8AAG4nrQCLR5Wb9-U86e2atvr8nnVn9jWxR4WYNmMg",
         },
         .re2 = .{
             .url = "git+https://github.com/google/re2?ref=2022-04-01#0c5616df9c0aaa44c9440d87422012423d91c7d1",
             .hash = "N-V-__8AAGxoGACubi_UB9NHSdrrXU_eABgvR1IT1kRFFCuG",
         },
         .boringssl = .{
-            .url = "git+https://github.com/google/boringssl?ref=0.20250415.0#2b44a3701a4788e1ef866ddc7f143060a3d196c9",
-            .hash = "N-V-__8AAGBEPgg0SDGiOZzhP7FChT8yyFI5YqU3soU43b5p",
+            .url = "git+https://github.com/google/boringssl?ref=0.20260616.0#3adc3d1aba162a578e2547f329fcce8659b8e89c",
+            .hash = "N-V-__8AAJPC0g0KEU0dz7Kq2qSZ-IRfZhgtn9MblCkh-5pa",
         },
         .cares = .{
             .url = "git+https://github.com/c-ares/c-ares?ref=v1.34.5#d3a507e920e7af18a5efb7f9f1d8044ed4750013",
