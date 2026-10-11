@@ -56,6 +56,22 @@ pub fn build(b: *Build) !void {
         // Find libgrpc in the `lib` directory installed next to `bin`, once installed
         bindings.addRPathSpecial(if (target.result.os.tag.isDarwin()) "@executable_path/../lib" else "$ORIGIN/../lib");
     }
+    if (linkmode == .dynamic and target.result.ofmt == .elf) {
+        // Hidden visibility leaves the symbols c-ares and the C++ runtime explicitly export,
+        // so hide them here (version scripts have no equivalent on Mach-O)
+        const version_script = b.addWriteFiles().add("libgrpc.map",
+            \\{
+            \\  local:
+            \\    ares_*;
+            \\    /* operator new, new[], delete and delete[] */
+            \\    _Znw*;
+            \\    _Zna*;
+            \\    _Zdl*;
+            \\    _Zda*;
+            \\};
+        );
+        libgrpc.setVersionScript(version_script);
+    }
 
     // Dependencies, lazy as they are not needed when using the system's libgrpc.
     // They are all requested before returning, so that missing ones are fetched together
@@ -98,7 +114,7 @@ pub fn build(b: *Build) !void {
     caresmod.addCSourceFiles(.{
         .root = cares.path(""),
         .files = &file_lists.libcares_src,
-        .flags = &c_flags,
+        .flags = &bundled_c_flags,
     });
     caresmod.addCMacro("_GNU_SOURCE", "1");
     caresmod.addCMacro("_HAS_EXCEPTIONS", "0");
@@ -125,7 +141,7 @@ pub fn build(b: *Build) !void {
     abseilmod.addCSourceFiles(.{
         .root = abseil.path(""),
         .files = &file_lists.libgrpc_third_party_abseil_cpp,
-        .flags = &cxx_flags,
+        .flags = &bundled_cxx_flags,
     });
     abseilmod.addIncludePath(abseil.path(""));
     libabseil.installHeadersDirectory(abseil.path("absl"), "absl", .{
@@ -144,7 +160,7 @@ pub fn build(b: *Build) !void {
     utf8mod.addCSourceFiles(.{
         .root = upstream.path("third_party/utf8_range"),
         .files = &file_lists.libgrpc_third_party_utf8_range,
-        .flags = &c_flags,
+        .flags = &bundled_c_flags,
     });
     libutf8.installHeader(
         upstream.path("third_party/utf8_range/utf8_range.h"),
@@ -163,13 +179,13 @@ pub fn build(b: *Build) !void {
     upbmod.addCSourceFiles(.{
         .root = upstream.path("third_party/upb"),
         .files = &file_lists.libgrpc_third_party_upb,
-        .flags = &c_flags,
+        .flags = &bundled_c_flags,
     });
     // Those are all generated upb files
     upbmod.addCSourceFiles(.{
         .root = upstream.path("src/core"),
         .files = &file_lists.libgrpc_src_core_c,
-        .flags = &c_flags,
+        .flags = &bundled_c_flags,
     });
     upbmod.addIncludePath(upstream.path("third_party/upb"));
     upbmod.addIncludePath(upstream.path("src/core/ext/upb-gen"));
@@ -188,7 +204,7 @@ pub fn build(b: *Build) !void {
     sslmod.addCSourceFiles(.{
         .root = boringssl.path(""),
         .files = &file_lists.libboringssl_src,
-        .flags = &(cxx_flags ++ .{"-fno-exceptions"}),
+        .flags = &(bundled_cxx_flags ++ .{"-fno-exceptions"}),
     });
     sslmod.addCMacro("OPENSSL_NO_ASM", "1");
     sslmod.addCMacro("_GNU_SOURCE", "1");
@@ -209,7 +225,7 @@ pub fn build(b: *Build) !void {
     zmod.addCSourceFiles(.{
         .root = zlib.path(""),
         .files = &file_lists.libz_src,
-        .flags = &c_flags,
+        .flags = &bundled_c_flags,
     });
     zmod.addCMacro("HAVE_UNISTD_H", "1");
     libz.installHeadersDirectory(zlib.path(""), "", .{
@@ -228,7 +244,7 @@ pub fn build(b: *Build) !void {
     addrsort.addCSourceFiles(.{
         .root = upstream.path("third_party/address_sorting"),
         .files = &file_lists.libgrpc_third_party_address_sorting,
-        .flags = &c_flags,
+        .flags = &bundled_c_flags,
     });
     addrsort.addIncludePath(upstream.path("third_party/address_sorting/include"));
     libaddrsort.installHeadersDirectory(upstream.path("third_party/address_sorting/include/address_sorting"), "address_sorting", .{});
@@ -245,7 +261,7 @@ pub fn build(b: *Build) !void {
     re2mod.addCSourceFiles(.{
         .root = re2.path(""),
         .files = &file_lists.libgrpc_third_party_re2,
-        .flags = &cxx_flags,
+        .flags = &bundled_cxx_flags,
     });
     re2mod.addIncludePath(re2.path(""));
     libre2.installHeadersDirectory(re2.path("re2"), "re2", .{});
@@ -255,7 +271,8 @@ pub fn build(b: *Build) !void {
     grpc.addCSourceFiles(.{
         .root = upstream.path("src/core"),
         .files = &file_lists.libgrpc_src_core_cpp,
-        .flags = &(cxx_flags ++ .{"-fno-exceptions"}),
+        // Inline functions of the bundled libraries would otherwise be exported along with gRPC's
+        .flags = &(cxx_flags ++ .{ "-fno-exceptions", "-fvisibility-inlines-hidden" }),
     });
     grpc.addIncludePath(upstream.path("include"));
     grpc.addIncludePath(upstream.path(""));
@@ -397,6 +414,10 @@ pub fn build(b: *Build) !void {
 const common_flags = .{ "-Wall", "-Wextra" };
 const c_flags = common_flags ++ .{"-std=c11"};
 const cxx_flags = common_flags ++ .{"-std=c++17"};
+// The bundled libraries are only used by libgrpc: a dynamic libgrpc should not export them,
+// so that they cannot conflict with other versions loaded by the same program
+const bundled_c_flags = c_flags ++ .{"-fvisibility=hidden"};
+const bundled_cxx_flags = cxx_flags ++ .{"-fvisibility=hidden"};
 
 const gtest_srcs = .{
     "gtest-assertion-result.cc",
