@@ -31,6 +31,9 @@ jobs:
         uses: mlugg/setup-zig@v2
         with:
           version: ${{ matrix.zig-version }}
+          # A Debug libgrpc build fills about 2.5 GB of cache, above the default 2 GiB limit
+          # that empties it after each run. Compressed, it only takes about 0.5 GB of storage
+          cache-size-limit: 4096
 
       - name: Build dependencies
         run: zig build -Dlink_mode=dynamic --summary all dependencies
