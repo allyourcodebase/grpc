@@ -18,14 +18,61 @@ pub fn build(b: *Build) !void {
         "Produce Position Independent Code. Defaults to true when link_mode is dynamic",
     ) orelse (linkmode == .dynamic);
 
-    // Dependencies
-    const upstream = b.dependency("upstream", .{});
-    const abseil = b.dependency("abseil", .{});
-    const re2 = b.dependency("re2", .{});
-    const boringssl = b.dependency("boringssl", .{});
-    const cares = b.dependency("cares", .{});
-    const gtest = b.dependency("gtest", .{});
-    const zlib = b.dependency("zlib", .{});
+    // Generate bindings from grpc C headers
+    const include_all = b.addWriteFile("grpc_api.h",
+        \\#include <grpc/grpc.h>
+        \\#include <grpc/credentials.h>
+        \\#include <grpc/byte_buffer_reader.h>
+    );
+    const grpc_capi = b.addTranslateC(.{
+        .root_source_file = try include_all.getDirectory().join(b.allocator, "grpc_api.h"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const bindings = grpc_capi.addModule("cgrpc");
+
+    if (b.systemIntegrationOption("grpc", .{})) {
+        bindings.linkSystemLibrary("grpc", .{});
+        return;
+    }
+
+    // Core library, declared before the dependencies are known to be available,
+    // so that packages depending on this one can always find it
+    const grpc = b.createModule(.{
+        .target = target,
+        .optimize = optimize,
+        .link_libcpp = true,
+        .pic = pic,
+    });
+    const libgrpc = b.addLibrary(.{
+        .name = "grpc",
+        .root_module = grpc,
+        .linkage = linkmode,
+        .version = file_lists.core_version,
+    });
+    b.installArtifact(libgrpc);
+    bindings.linkLibrary(libgrpc);
+
+    // Dependencies, lazy as they are not needed when using the system's libgrpc.
+    // They are all requested before returning, so that missing ones are fetched together
+    const deps = .{
+        .upstream = b.lazyDependency("upstream", .{}),
+        .abseil = b.lazyDependency("abseil", .{}),
+        .re2 = b.lazyDependency("re2", .{}),
+        .boringssl = b.lazyDependency("boringssl", .{}),
+        .cares = b.lazyDependency("cares", .{}),
+        .gtest = b.lazyDependency("gtest", .{}),
+        .zlib = b.lazyDependency("zlib", .{}),
+    };
+    const upstream = deps.upstream orelse return;
+    const abseil = deps.abseil orelse return;
+    const re2 = deps.re2 orelse return;
+    const boringssl = deps.boringssl orelse return;
+    const cares = deps.cares orelse return;
+    const gtest = deps.gtest orelse return;
+    const zlib = deps.zlib orelse return;
+
+    grpc_capi.addIncludePath(upstream.path("include"));
 
     const libs_step = b.step("dependencies", "Install libraries libgrpc depends on");
 
@@ -201,19 +248,6 @@ pub fn build(b: *Build) !void {
     libs_step.dependOn(&b.addInstallArtifact(libre2, .{}).step);
 
     // Core library
-    const grpc = b.createModule(.{
-        .target = target,
-        .optimize = optimize,
-        .link_libcpp = true,
-        .pic = pic,
-    });
-    const libgrpc = b.addLibrary(.{
-        .name = "grpc",
-        .root_module = grpc,
-        .linkage = linkmode,
-        .version = file_lists.core_version,
-    });
-
     grpc.addCSourceFiles(.{
         .root = upstream.path("src/core"),
         .files = &file_lists.libgrpc_src_core_cpp,
@@ -237,7 +271,6 @@ pub fn build(b: *Build) !void {
         grpc.addCMacro("OSATOMIC_USE_INLINED", "1");
     }
     libgrpc.installHeadersDirectory(upstream.path("include/grpc"), "grpc", .{});
-    b.installArtifact(libgrpc);
 
     { // Build tests to ensure no symbols are missing
         const example_step = b.step("examples", "Build example programs");
@@ -354,23 +387,6 @@ pub fn build(b: *Build) !void {
             example_step.dependOn(&install_exe.step);
             test_step.dependOn(&run_exe.step);
         }
-    }
-
-    { // Generate bindings from grpc C headers
-        const include_all = b.addWriteFile("grpc_api.h",
-            \\#include <grpc/grpc.h>
-            \\#include <grpc/credentials.h>
-            \\#include <grpc/byte_buffer_reader.h>
-        );
-        const grpc_capi = b.addTranslateC(.{
-            .root_source_file = try include_all.getDirectory().join(b.allocator, "grpc_api.h"),
-            .target = target,
-            .optimize = optimize,
-        });
-        grpc_capi.addIncludePath(upstream.path("include"));
-
-        const bindings = grpc_capi.addModule("cgrpc");
-        bindings.linkLibrary(libgrpc);
     }
 }
 
