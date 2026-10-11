@@ -10,8 +10,8 @@ pub fn build(b: *Build) !void {
     const linkmode = b.option(
         std.builtin.LinkMode,
         "link_mode",
-        "Compile static or dynamic libraries. Defaults to dynamic",
-    ) orelse .dynamic;
+        "Compile static or dynamic libraries. Defaults to static",
+    ) orelse .static;
     const pic = b.option(
         bool,
         "pic",
@@ -52,6 +52,10 @@ pub fn build(b: *Build) !void {
     });
     b.installArtifact(libgrpc);
     bindings.linkLibrary(libgrpc);
+    if (linkmode == .dynamic) {
+        // Find libgrpc in the `lib` directory installed next to `bin`, once installed
+        bindings.addRPathSpecial(if (target.result.os.tag.isDarwin()) "@executable_path/../lib" else "$ORIGIN/../lib");
+    }
 
     // Dependencies, lazy as they are not needed when using the system's libgrpc.
     // They are all requested before returning, so that missing ones are fetched together

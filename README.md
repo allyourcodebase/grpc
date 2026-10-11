@@ -29,34 +29,51 @@
 ## Use
 
 Add the dependency to your `build.zig.zon` by running the following command:
-```zig
+```shell
 zig fetch --save git+https://github.com/allyourcodebase/grpc#master
 ```
 
-Then, in your `build.zig`:
+Simple usage from your `build.zig`:
 ```zig
 const grpc = b.dependency("grpc", .{
 	.target = target,
 	.optimize = optimize,
-	.link_mode = .dynamic,
+});
+
+mod.addImport("cgrpc", grpc.module("cgrpc"));
+```
+
+Advanced usage, for C users or to choose the linking mode:
+```zig
+const grpc_link_mode = b.option(std.builtin.LinkMode, "grpc_link_mode", "Compile the gRPC core library statically or dynamically") orelse .static;
+const use_system_grpc = b.systemIntegrationOption("grpc", .{});
+
+const grpc = b.dependency("grpc", .{
+	.target = target,
+	.optimize = optimize,
+	.link_mode = grpc_link_mode,
 	.pic = true,
 });
+if (grpc_link_mode == .dynamic and !use_system_grpc)
+	b.installArtifact(grpc.artifact("grpc"));
 
 // to use from Zig:
 mod.addImport("cgrpc", grpc.module("cgrpc"));
 
 // to use from C:
-if (b.systemIntegrationOption("grpc", .{})) {
+if (use_system_grpc) {
 	exe.root_module.linkSystemLibrary("grpc", .{});
 } else {
 	exe.root_module.linkLibrary(grpc.artifact("grpc"));
+	if (grpc_link_mode == .dynamic)
+		exe.root_module.addRPathSpecial(if (target.result.os.tag.isDarwin()) "@executable_path/../lib" else "$ORIGIN/../lib");
 }
 ```
 
 ## Options
 
 ```
-  -Dlink_mode=[enum]           Compile static or dynamic libraries. Defaults to dynamic
+  -Dlink_mode=[enum]           Compile static or dynamic libraries. Defaults to static
                                  Supported Values:
                                    static
                                    dynamic
@@ -67,7 +84,7 @@ if (b.systemIntegrationOption("grpc", .{})) {
 
 By default, libgrpc is built from source, to allow cross-compilation and reproducibility.
 
-However, for security reason, or to not waste disk / CPU / time re-compiling a huge library already installed on the system, it might be preferable to use the system's `.so`/`.dylib`
+However, for security reasons, or to not waste disk / CPU / time re-compiling a huge library already installed on the system, it might be preferable to use the system's `.so`/`.dylib`.
 
 For this purpose, a system integration is available. When building the final binary:
 
