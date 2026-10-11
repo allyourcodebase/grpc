@@ -33,10 +33,10 @@ jobs:
           version: ${{ matrix.zig-version }}
 
       - name: Build dependencies
-        run: zig build dependencies --summary all
+        run: zig build -Dlink_mode=dynamic --summary all dependencies
       - name: Build libgrpc
-        run: zig build --summary new
+        run: zig build -Dlink_mode=dynamic --summary new
       - name: Build test programs
-        run: zig build examples --summary new
+        run: zig build -Dlink_mode=dynamic --summary new examples
       - name: Run tests
-        run: zig build test --summary new
+        run: zig build -Dlink_mode=dynamic --summary new test
