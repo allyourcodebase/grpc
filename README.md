@@ -2,7 +2,7 @@
 
 ## Status
 
-| Architecture \ OS | Linux | MacOS |
+| Architecture \ OS | Linux | macOS |
 |:------------------|:-----:|:-----:|
 | x86_64            | ✅    | ✅    |
 | arm 64            | ✅    | ✅    |
@@ -51,7 +51,7 @@ const grpc = b.dependency("grpc", .{
 	.target = target,
 	.optimize = optimize,
 	.link_mode = grpc_link_mode,
-	.pic = true, // can be omitted to follow link_mode
+	.pic = true, // needed to link a static libgrpc into a shared library or a PIE, defaults to true only when dynamic
 });
 const libgrpc_built = if (b.systemIntegrationOption("grpc", .{})) null else grpc.artifact("grpc");
 
@@ -96,7 +96,7 @@ For this purpose, a system integration is available. When building the final bin
 zig build -fsys=grpc
 ```
 
-will use the system's gRPC library. The `cgrpc` module then links it, and none of the sources libgrpc is built from get fetched.
+will use the system's gRPC library. The `cgrpc` module then links it, and nothing gets downloaded or built.
 
-The `grpc` artifact is not available in this mode, which is why C users check the same option, as shown in [Use](#use).
+The `grpc` artifact is not available in this mode, which is why the [advanced usage](#use) checks the same option.
 As system integration options are shared by the whole build, they get the same answer as this package.
