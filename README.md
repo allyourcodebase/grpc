@@ -45,7 +45,7 @@ mod.addImport("cgrpc", grpc.module("cgrpc"));
 
 Advanced usage, for C users or to choose the linking mode:
 ```zig
-const grpc_link_mode = b.option(std.builtin.LinkMode, "grpc_link_mode", "Compile the gRPC core library statically or dynamically") orelse .static;
+const grpc_link_mode = b.option(std.builtin.LinkMode, "grpc_link_mode", "Compile the gRPC core library statically or dynamically");
 const use_system_grpc = b.systemIntegrationOption("grpc", .{});
 
 const grpc = b.dependency("grpc", .{
