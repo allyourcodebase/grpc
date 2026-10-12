@@ -74,6 +74,8 @@ if (libgrpc_built) |libgrpc| {
 }
 ```
 
+The [`example`](example) directory is a complete project using it from both Zig and C.
+
 ## Options
 
 ```

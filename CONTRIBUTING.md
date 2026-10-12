@@ -22,6 +22,8 @@ zig build                 # Build and install libgrpc
 zig build dependencies    # Build and install the bundled libraries
 zig build examples        # Build the test programs
 zig build test            # Run the test programs
+
+cd example && zig build run   # Build and run the README's advanced usage, from Zig and C
 ```
 
 Options:
@@ -60,7 +62,9 @@ A Debug libgrpc build takes about 2 minutes on an Apple Silicon laptop, 18 to 30
 ## CI
 
 - Every step passes `-Dlink_mode=dynamic`, so the test programs reuse the same libgrpc, and exercise the dynamic library's exports.
+- Every step also passes `-Dcpu=baseline`: the target CPU is part of every cache key, and the native CPU varies between runners, so without it the cache is rarely reused.
 - `mlugg/setup-zig` caches `$GITHUB_WORKSPACE/.zig-cache` per job name and exact Zig version. Its default 2 GiB `cache-size-limit` empties the cache after a Debug libgrpc build (about 2.5 GB, 0.45 GB compressed), hence `cache-size-limit: 4096`.
+- The 0.17.0 and master jobs miss the cache anyway: since 0.17, a file whose metadata changed (as after extracting packages on a fresh runner) is recompiled even when its contents did not, see https://codeberg.org/ziglang/zig/issues/37200.
 
 ## Dependents
 
