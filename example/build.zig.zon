@@ -1,0 +1,17 @@
+.{
+    .name = .grpc_example,
+    .version = "0.0.0",
+    .fingerprint = 0x6d7035a87573b2e3,
+    .minimum_zig_version = "0.15.0",
+
+    .dependencies = .{
+        .grpc = .{ .path = ".." },
+    },
+
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "main.c",
+        "main.zig",
+    },
+}
