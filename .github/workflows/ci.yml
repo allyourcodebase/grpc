@@ -35,11 +35,12 @@ jobs:
           # that empties it after each run. Compressed, it only takes about 0.5 GB of storage
           cache-size-limit: 4096
 
+      # The CPU is part of every cache key, and runners' CPUs vary: target the baseline CPU to reuse the cache
       - name: Build dependencies
-        run: zig build -Dlink_mode=dynamic --summary all dependencies
+        run: zig build -Dlink_mode=dynamic -Dcpu=baseline --summary all dependencies
       - name: Build libgrpc
-        run: zig build -Dlink_mode=dynamic --summary new
+        run: zig build -Dlink_mode=dynamic -Dcpu=baseline --summary new
       - name: Build test programs
-        run: zig build -Dlink_mode=dynamic --summary new examples
+        run: zig build -Dlink_mode=dynamic -Dcpu=baseline --summary new examples
       - name: Run tests
-        run: zig build -Dlink_mode=dynamic --summary new test
+        run: zig build -Dlink_mode=dynamic -Dcpu=baseline --summary new test
