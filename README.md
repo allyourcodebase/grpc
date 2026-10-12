@@ -45,28 +45,32 @@ mod.addImport("cgrpc", grpc.module("cgrpc"));
 
 Advanced usage, for C users or to choose the linking mode:
 ```zig
-const grpc_link_mode = b.option(std.builtin.LinkMode, "grpc_link_mode", "Compile the gRPC core library statically or dynamically");
-const use_system_grpc = b.systemIntegrationOption("grpc", .{});
+const grpc_link_mode = b.option(std.builtin.LinkMode, "grpc_link_mode", "Link the gRPC core library statically or dynamically");
 
 const grpc = b.dependency("grpc", .{
 	.target = target,
 	.optimize = optimize,
 	.link_mode = grpc_link_mode,
-	.pic = true,
+	.pic = true, // can be omitted to follow link_mode
 });
-if (grpc_link_mode == .dynamic and !use_system_grpc)
-	b.installArtifact(grpc.artifact("grpc"));
+const libgrpc_built = if (b.systemIntegrationOption("grpc", .{})) null else grpc.artifact("grpc");
 
 // to use from Zig:
 mod.addImport("cgrpc", grpc.module("cgrpc"));
+if (libgrpc_built) |libgrpc| {
+	if (libgrpc.isDynamicLibrary())
+		b.installArtifact(libgrpc);
+}
 
 // to use from C:
-if (use_system_grpc) {
-	exe.root_module.linkSystemLibrary("grpc", .{});
-} else {
-	exe.root_module.linkLibrary(grpc.artifact("grpc"));
-	if (grpc_link_mode == .dynamic)
+if (libgrpc_built) |libgrpc| {
+	exe.root_module.linkLibrary(libgrpc);
+	if (libgrpc.isDynamicLibrary()) {
+		b.installArtifact(libgrpc);
 		exe.root_module.addRPathSpecial(if (target.result.os.tag.isDarwin()) "@executable_path/../lib" else "$ORIGIN/../lib");
+	}
+} else {
+	exe.root_module.linkSystemLibrary("grpc", .{});
 }
 ```
 
