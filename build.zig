@@ -27,7 +27,8 @@ pub fn build(b: *Build) !void {
     const grpc_capi = b.addTranslateC(.{
         .root_source_file = try include_all.getDirectory().join(b.allocator, "grpc_api.h"),
         .target = target,
-        .optimize = optimize,
+        // Since Zig 0.18, `standardOptimizeOption` may return null, which `addTranslateC` does not accept
+        .optimize = if (@typeInfo(@TypeOf(optimize)) == .optional) optimize orelse .Debug else optimize,
     });
     const bindings = grpc_capi.addModule("cgrpc");
 
