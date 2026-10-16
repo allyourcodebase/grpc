@@ -44,7 +44,7 @@ pub fn build(b: *std.Build) void {
         if (libgrpc_built) |libgrpc| {
             c_mod.linkLibrary(libgrpc);
             if (libgrpc.isDynamicLibrary()) {
-                // b.installArtifact(libgrpc); // if your use case is C only you can install it directly
+                // b.installArtifact(libgrpc); // if your use case is C only you can install it here, instead of repeating the ifs
                 c_mod.addRPathSpecial(if (target.result.os.tag.isDarwin()) "@executable_path/../lib" else "$ORIGIN/../lib");
             }
         } else {

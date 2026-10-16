@@ -28,7 +28,7 @@ cd example && zig build run   # Build and run the README's advanced usage, from 
 
 Options:
 - `-Dlink_mode=static|dynamic`: static by default
-- `-Dpic=bool`: defaults to true when dynamic
+- `-Dpic=bool`: defaults to true when dynamic, to the target's default otherwise
 - `-fsys=grpc`: use the system's libgrpc, nothing is built or downloaded
 
 A Debug libgrpc build takes about 2 minutes on an Apple Silicon laptop, 18 to 30 minutes on GitHub runners.

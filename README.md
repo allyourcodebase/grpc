@@ -51,7 +51,7 @@ const grpc = b.dependency("grpc", .{
 	.target = target,
 	.optimize = optimize,
 	.link_mode = grpc_link_mode,
-	.pic = true, // needed to link a static libgrpc into a shared library or a PIE, defaults to true only when dynamic
+	.pic = true, // may be used to force PIC when linking libgrpc statically inside a dynamic library or PIE
 });
 const libgrpc_built = if (b.systemIntegrationOption("grpc", .{})) null else grpc.artifact("grpc");
 
@@ -83,7 +83,7 @@ The [`example`](example) directory is a complete project using it from both Zig 
                                  Supported Values:
                                    static
                                    dynamic
-  -Dpic=[bool]                 Produce Position Independent Code. Defaults to true when link_mode is dynamic
+  -Dpic=[bool]                 Produce Position Independent Code. Defaults to true when link_mode is dynamic, to the target's default otherwise
 ```
 
 ## System Integration

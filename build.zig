@@ -15,8 +15,8 @@ pub fn build(b: *Build) !void {
     const pic = b.option(
         bool,
         "pic",
-        "Produce Position Independent Code. Defaults to true when link_mode is dynamic",
-    ) orelse (linkmode == .dynamic);
+        "Produce Position Independent Code. Defaults to true when link_mode is dynamic, to the target's default otherwise",
+    ) orelse if (linkmode == .dynamic) true else null; // PIC is required when dynamic, and there is no need to disable it when static
 
     // Generate bindings from grpc C headers
     const include_all = b.addWriteFile("grpc_api.h",
