@@ -23,6 +23,7 @@ pub fn build(b: *Build) !void {
         \\#include <grpc/grpc.h>
         \\#include <grpc/credentials.h>
         \\#include <grpc/byte_buffer_reader.h>
+        \\#include <grpc/support/alloc.h>
     );
     const grpc_capi = b.addTranslateC(.{
         .root_source_file = try include_all.getDirectory().join(b.allocator, "grpc_api.h"),

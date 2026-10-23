@@ -5,7 +5,7 @@ Guidance for working on this repository.
 ## Project
 
 gRPC's core library (libgrpc) packaged for the Zig build system. It exposes:
-- the `cgrpc` module: translate-c bindings of `grpc/grpc.h`, `grpc/credentials.h` and `grpc/byte_buffer_reader.h`, linked to libgrpc
+- the `cgrpc` module: translate-c bindings of `grpc/grpc.h`, `grpc/credentials.h`, `grpc/byte_buffer_reader.h` and `grpc/support/alloc.h`, linked to libgrpc
 - the `grpc` artifact: the library itself, with its headers installed
 
 Supported: Zig 0.15.x to master (see the CI matrix), Linux and macOS on x86_64 and aarch64.
