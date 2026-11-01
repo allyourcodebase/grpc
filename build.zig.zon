@@ -1,6 +1,6 @@
 .{
     .name = .grpc,
-    .version = "1.85.0",
+    .version = "1.85.1",
     .fingerprint = 0x2b44e58c15cd55d6,
     .minimum_zig_version = "0.15.0",
 
@@ -14,8 +14,8 @@
 
     .dependencies = .{
         .upstream = .{
-            .url = "git+https://github.com/grpc/grpc?ref=v1.85.0#a83eb274517ef49e95d5529dac071f4b74abae0d",
-            .hash = "N-V-__8AAODZ3AQ9Gn9gAyLPNNqmi6bYYYq_r-mcGys34KSC",
+            .url = "git+https://github.com/grpc/grpc?ref=v1.85.1#558b7e3b09e42e2160018732acbbf56c9094c84d",
+            .hash = "N-V-__8AAAid3QRYmDMSdVsfcc_eePkMMOiEjURpjMR5j6hi",
             .lazy = true,
         },
         .abseil = .{
