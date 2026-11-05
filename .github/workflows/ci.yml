@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        zig-version: ["master", "0.17.0"]
+        zig-version: ["master", "0.17.1"]
         os: [ubuntu-latest, macos-latest]
         include:
           - zig-version: "0.16.0"
