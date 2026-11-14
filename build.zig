@@ -78,7 +78,7 @@ pub fn build(b: *Build) !void {
     // Dependencies, lazy as they are not needed when using the system's libgrpc.
     // They are all requested before returning, so that missing ones are fetched together
     const deps = .{
-        .upstream = b.lazyDependency("upstream", .{}),
+        .grpc = b.lazyDependency("grpc", .{}),
         .abseil = b.lazyDependency("abseil", .{}),
         .re2 = b.lazyDependency("re2", .{}),
         .boringssl = b.lazyDependency("boringssl", .{}),
@@ -86,7 +86,7 @@ pub fn build(b: *Build) !void {
         .gtest = b.lazyDependency("gtest", .{}),
         .zlib = b.lazyDependency("zlib", .{}),
     };
-    const upstream = deps.upstream orelse return;
+    const upstream = deps.grpc orelse return;
     const abseil = deps.abseil orelse return;
     const re2 = deps.re2 orelse return;
     const boringssl = deps.boringssl orelse return;

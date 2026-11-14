@@ -9,7 +9,7 @@ FETCH_ARG="git+$URL#$GIT_REF"
 
 # 1. Fetch the new version
 HASH=$(zig fetch $FETCH_ARG)
-zig fetch --save=upstream $FETCH_ARG
+zig fetch --save=grpc $FETCH_ARG
 
 # 2. Re-generate the file lists
 uv run generate.py < zig-pkg/$HASH/Makefile | zig fmt --stdin > generated.zig
